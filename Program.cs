@@ -488,13 +488,17 @@ namespace brCodeUlt
             }
         }
 
-        public static string Offset (this string text, int amount)
+        public static string Offset(this string text, int amount)
         {
             char[] offsetString = text.ToCharArray();
 
             for (int i = 0; i < text.Length; i++)
             {
-                offsetString[i] = (char)(Convert.ToInt32(text[i]) + amount);
+                int charInt = (Convert.ToInt32(text[i]) + amount);
+                if (charInt < 0)
+                    charInt = 256 + charInt;
+
+                offsetString[i] = (char)charInt;
             }
 
             return new string(offsetString);
