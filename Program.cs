@@ -37,7 +37,6 @@ namespace brCodeUlt
                         string password = Console.ReadLine();
                         string decodedText = BRCodeUlt.DecodeText(bytes, password);
                         Console.WriteLine(decodedText + " ");
-                        Console.WriteLine();
                     }
                     else
                     {
@@ -143,10 +142,13 @@ namespace brCodeUlt
 
             int offsetNum = returnValue.Length;
 
-            if (returnValue[offsetNum - 1] == ' ')
-                offsetNum -= 1;
-
             offsetNum *= -1;
+
+            if ((int)returnValue[returnValue.Length - 1] == 3)
+            {
+                returnValue = returnValue[0..(returnValue.Length - 1)];
+                offsetNum += 1;
+            }
 
             return returnValue.Offset(offsetNum);
         }
@@ -174,7 +176,7 @@ namespace brCodeUlt
             {
                 if (text.Length % 2 != 0 && text.Length < 2)
                 {
-                    twins.Add(text + ' ');
+                    twins.Add(text + (char)03);
                 }
                 else
                 {
@@ -487,7 +489,7 @@ namespace brCodeUlt
                 list[n] = value;
             }
         }
-
+        
         public static string Offset(this string text, int amount)
         {
             char[] offsetString = text.ToCharArray();
