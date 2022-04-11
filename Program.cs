@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Text;
 using System.Security.Cryptography;
 
@@ -140,26 +140,72 @@ namespace brCodeUlt
                 returnValue += Decode(binary);
             }
 
-            int offsetNum = returnValue.Length;
-
-            offsetNum *= -1;
-
             if ((int)returnValue[returnValue.Length - 1] == 3)
             {
                 returnValue = returnValue[0..(returnValue.Length - 1)];
-                offsetNum += 1;
             }
 
-            return returnValue.Offset(offsetNum);
-        }
+            string recordString = returnValue;
 
+            if ((int)recordString[0] == 23)
+            {
+                string[] records = recordString.Split((char)23);
+
+                int offsetInt = recordString.Length;
+
+                string _return = records[2][0..(Convert.ToInt32(records[1]))];
+
+                return _return;
+            }
+
+            return returnValue;
+        }
+        
         public static byte[] EncodeText(string input, string password)
         {
             Console.WriteLine("Encrypting...");
 
             int length = input.Length;
 
-            string text = input.Offset(input.Length);
+            string tempStr = input;
+
+            string startRecord = "";
+            string endRecord = "";
+
+            if (input.Length <= 1014)
+            {
+                int sectorLength = random.Next(1, 1014 - input.Length);
+
+                int startRecordNum = sectorLength;
+                int endRecordNum = (1014 - input.Length - sectorLength);
+
+                startRecord = (char)23 + input.Length.ToString() + (char)23;
+
+                int recordLength = startRecord.Length + endRecord.Length;
+
+                List<char> set1 = new List<char>();
+                List<char> set2 = new List<char>();
+
+                for (int i = 0; i < startRecordNum; i++)
+                {
+                    int b = random.Next(32, 256);
+                    set1.Add((char)b);
+                }
+
+                for (int i = 0; i < endRecordNum; i++)
+                {
+                    int b = random.Next(32, 256);
+                    set2.Add((char)b);
+                }
+
+                string newText = input + new string(set1.ToArray()) + new string(set2.ToArray());
+
+                tempStr = newText;
+            }
+
+            string text = tempStr;
+
+            text = startRecord + text;
 
             List<byte> returnValue = new();
 
@@ -167,10 +213,10 @@ namespace brCodeUlt
 
             int index = 0;
 
-            if (length % 2 != 0)
-                index = length / 2 + 1;
+            if (text.Length % 2 != 0)
+                index = text.Length / 2 + 1;
             else
-                index = length / 2;
+                index = text.Length / 2;
 
             for (int i = 0; i < index; i++)
             {
@@ -499,6 +545,8 @@ namespace brCodeUlt
                 int charInt = (Convert.ToInt32(text[i]) + amount);
                 if (charInt < 0)
                     charInt = 256 + charInt;
+
+                charInt = charInt % 256;
 
                 offsetString[i] = (char)charInt;
             }
